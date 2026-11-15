@@ -2,8 +2,8 @@
 
 ```bash
 # 1. one-time identity
-git config --global user.name  "Your Name"
-git config --global user.email "you@example.com"
+git config --global user.name  "Pulkit"
+git config --global user.email "pulkitsharma02345@gmail.com"
 
 # 2. inside the project folder
 cd backend-devops-tasks
