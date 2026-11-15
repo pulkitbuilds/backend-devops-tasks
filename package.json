@@ -1,0 +1,23 @@
+{
+  "name": "backend-devops-tasks",
+  "version": "1.0.0",
+  "description": "Auth (JWT, bcrypt, RBAC, token versioning), MongoDB CRUD, file sharing, Redis, rate limiting, Docker, K8s, CI/CD",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test",
+    "seed:admin": "node scripts/seed-admin.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.0",
+    "multer": "^1.4.5-lts.1"
+  }
+}

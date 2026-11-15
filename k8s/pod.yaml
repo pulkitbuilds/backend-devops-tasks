@@ -1,0 +1,49 @@
+# Kubernetes Pod task: runs the app image in a single Pod.
+# Create the secret first (see docs/kubernetes.md), then:  kubectl apply -f k8s/pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backend-pod
+  labels:
+    app: backend-tasks
+spec:
+  containers:
+    - name: app
+      image: backend-tasks:latest        # built locally / pushed to a registry
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 3000
+      env:
+        - name: PORT
+          value: "3000"
+        - name: REDIS_DISABLED
+          value: "true"                  # no Redis in this simple pod; limiter uses memory
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: JWT_SECRET
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: MONGO_URI
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 3000
+        initialDelaySeconds: 3
+        periodSeconds: 5
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 3000
+        initialDelaySeconds: 10
+        periodSeconds: 10
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi

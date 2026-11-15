@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login</title>
+<style>
+  :root { --bg:#f4f5f7; --card:#fff; --text:#1c1e21; --muted:#6b7280; --accent:#2563eb; --err:#dc2626; --ok:#16a34a; --border:#d1d5db; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#111827; --card:#1f2937; --text:#f3f4f6; --muted:#9ca3af; --accent:#3b82f6; --border:#374151; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg); color:var(--text); font-family:system-ui,sans-serif; }
+  .card { background:var(--card); padding:2rem; border-radius:12px; width:min(92vw,380px); box-shadow:0 4px 20px rgba(0,0,0,.12); }
+  h1 { margin:0 0 1rem; font-size:1.4rem; }
+  label { display:block; margin:.8rem 0 .25rem; font-size:.85rem; color:var(--muted); }
+  input { width:100%; padding:.6rem .7rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--text); font-size:1rem; }
+  button { width:100%; margin-top:1.2rem; padding:.7rem; border:0; border-radius:8px; background:var(--accent); color:#fff; font-size:1rem; cursor:pointer; }
+  .toggle { margin-top:1rem; text-align:center; font-size:.9rem; color:var(--muted); }
+  .toggle a { color:var(--accent); cursor:pointer; }
+  #msg { margin-top:.8rem; font-size:.9rem; min-height:1.2em; }
+  .hide { display:none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1 id="title">Login</h1>
+  <div id="nameWrap" class="hide">
+    <label for="name">Name</label>
+    <input id="name" autocomplete="name">
+  </div>
+  <label for="email">Email</label>
+  <input id="email" type="email" autocomplete="email">
+  <label for="password">Password</label>
+  <input id="password" type="password" autocomplete="current-password">
+  <button id="submit">Login</button>
+  <div id="msg"></div>
+  <div class="toggle"><span id="toggleText">No account?</span> <a id="toggle">Sign up</a></div>
+</div>
+
+<script>
+  let mode = 'login';
+  const $ = (id) => document.getElementById(id);
+
+  // already logged in? go straight to the next page
+  try { if (localStorage.getItem('token')) location.replace('/dashboard.html'); } catch (e) {}
+
+  function setMsg(text, ok) {
+    $('msg').textContent = text;
+    $('msg').style.color = ok ? 'var(--ok)' : 'var(--err)';
+  }
+
+  $('toggle').onclick = () => {
+    mode = mode === 'login' ? 'signup' : 'login';
+    $('title').textContent = mode === 'login' ? 'Login' : 'Sign up';
+    $('submit').textContent = mode === 'login' ? 'Login' : 'Create account';
+    $('nameWrap').classList.toggle('hide', mode === 'login');
+    $('toggleText').textContent = mode === 'login' ? 'No account?' : 'Have an account?';
+    $('toggle').textContent = mode === 'login' ? 'Sign up' : 'Login';
+    setMsg('');
+  };
+
+  $('submit').onclick = async () => {
+    const body = { email: $('email').value, password: $('password').value };
+    if (mode === 'signup') body.name = $('name').value;
+    try {
+      const res = await fetch('/api/auth/' + mode, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) return setMsg(data.error || 'Something went wrong');
+
+      if (mode === 'signup') {
+        $('toggle').click();
+        return setMsg('Account created. Please log in.', true);
+      }
+      localStorage.setItem('token', data.token);   // store token
+      location.href = '/dashboard.html';           // access the next page
+    } catch (e) {
+      setMsg('Network error');
+    }
+  };
+</script>
+</body>
+</html>
